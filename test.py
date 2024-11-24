@@ -7,8 +7,8 @@ class TestLibrary(unittest.TestCase):
 
     def setUp(self):
         """Настройка перед каждым тестом."""
-        self.library = Library()
-        # Создаем тестовый файл library.json
+        self.library = Library('test_library.json')
+        # Создаем тестовый файл filename
         self.test_file = 'test_library.json'
         with open(self.test_file, 'w', encoding='utf-8') as f:
             json.dump([], f, ensure_ascii=False)
@@ -33,10 +33,6 @@ class TestLibrary(unittest.TestCase):
         books = self.library.show_all_books()
         self.assertEqual(len(books), 0)
 
-    def test_delete_nonexistent_book(self):
-        """Тест удаления несуществующей книги."""
-        with self.assertRaises(ValueError):
-            self.library.delete_book_by_id(99)
 
     def test_find_book_by_id(self):
         """Тест поиска книги по ID."""
@@ -48,7 +44,7 @@ class TestLibrary(unittest.TestCase):
     def test_find_nonexistent_book_by_id(self):
         """Тест поиска несуществующей книги по ID."""
         book = self.library.find_book_by_id(99)
-        self.assertEqual(book, "Книги по такому номеру нет в базе")
+        self.assertEqual(book, None)
 
     def test_show_all_books(self):
         """Тест отображения всех книг."""
@@ -66,7 +62,7 @@ class TestLibrary(unittest.TestCase):
     def test_find_nonexistent_book_by_title(self):
         """Тест поиска книги с несуществующим названием."""
         book = self.library.find_book_by_title("Nonexistent Book")
-        self.assertEqual(book, "Книги по такому номеру названию нет в базе")
+        self.assertEqual(book, None)
 
 if __name__ == "__main__":
     unittest.main()

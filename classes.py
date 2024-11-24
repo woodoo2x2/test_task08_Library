@@ -5,15 +5,14 @@ import os
 class Book:
     """Класс для представления книги."""
 
-    def __init__(self, id,  title, author, year):
-        self.id = id
-        self.title = title
-        self.author = author
-        self.year = year
-        self.status = True
+    def __init__(self, id: int, title: str, author: str, year: int) -> None:
+        self.id: int = id
+        self.title: str = title
+        self.author: str = author
+        self.year: int = year
+        self.status: bool = True
 
-
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Преобразует объект книги в словарь."""
         return {
             "id": self.id,
@@ -25,65 +24,61 @@ class Book:
 
 
 class Library:
+    def __init__(self, filename: str = 'library.json') -> None:
+        self.filename: str = filename
+        self.books: list = self._load_books()
 
-    def __init__(self):
-        self.books = []
-        if not os.path.exists('library.json'):
-            with open('library.json', 'w', encoding='utf-8') as library_json:
-                json.dump({}, library_json, indent=4, ensure_ascii=False)
-        else:
-            with open('library.json', "r", encoding="utf-8") as file:
-                data = json.load(file)
-                self.books = [i for i in data]
+    def _load_books(self) -> list:
+        """Загружает книги из файла."""
+        if os.path.exists(self.filename):
+            with open(self.filename, 'r', encoding='utf-8') as file:
+                return json.load(file)
+        return []
 
-    def add_book(self,title,author,year):
-        if self.books:
-            id = self.books[-1]['id'] + 1
-        else:
-            id = 1
+    def _save_books(self) -> None:
+        """Сохраняет книги в файл."""
+        with open(self.filename, 'w', encoding='utf-8') as file:
+            json.dump(self.books, file, indent=4, ensure_ascii=False)
 
+    def add_book(self, title: str, author: str, year: int) -> None:
+        """Добавляет новую книгу в библиотеку."""
+        new_id = self.books[-1]['id'] + 1 if self.books else 1
+        new_book = Book(new_id, title, author, year)
+        self.books.append(new_book.to_dict())
+        self._save_books()
 
-        self.books.append(Book(id,title, author, year).to_dict())
+    def delete_book_by_id(self, book_id: int) -> None:
+        """Удаляет книгу по ID."""
+        self.books = [book for book in self.books if book['id'] != book_id]
+        self._save_books()
 
-        with open('library.json', 'w', encoding='utf-8') as library_json:
-            json.dump(self.books, library_json, indent=4, ensure_ascii=False)
-
-    def delete_book_by_id(self,id):
-
-        with open('library.json', 'r', encoding='utf-8') as library_json:
-            self.books = json.load(library_json)
-
-        updating_books = [book for book in self.books if book['id'] != id]
-        if updating_books == self.books:
-            raise ValueError('Такой книги нет в библиотеке')
-        else:
-            with open('library.json', 'w',encoding='utf-8') as library_json:
-                json.dump(updating_books, library_json, indent=4, ensure_ascii=False)
-
-    def show_all_books(self):
+    def show_all_books(self) -> list:
+        """Показывает все книги в библиотеке."""
         return self.books
 
-    def find_book_by_id(self,id):
-        #id = int(input())
-        for book in self.books:
-            if book['id'] == id:
-                return book
-        return "Книги по такому номеру нет в базе"
+    def find_book_by_year(self, year: int) -> list:
+        """Поиск книги по году."""
+        return [book for book in self.books if book['year'] == year]
 
-    def find_book_by_title(self,title):
-        #title = input()
+    def change_book_status_by_id(self, book_id: int) -> None:
+        """Меняет статус книги по ID."""
+        book = next((book for book in self.books if book['id'] == book_id), None)
+        if book:
+            book['status'] = not book['status']
+            self._save_books()
+
+    def find_book_by_id(self, book_id: int) -> int:
+        """Ищет книгу по ID."""
+        for book in self.books:
+            if book['id'] == book_id:
+                return book
+
+    def find_book_by_title(self, title: str) -> dict:
+        """Ищет книгу по названию."""
         for book in self.books:
             if book['title'] == title:
                 return book
-        return "Книги по такому номеру названию нет в базе"
 
-    def find_book_by_author(self,author):
-        #author = input()
-        for book in self.books:
-            if book['author'] == author:
-                return book
-        return "Книги по такому номеру названию нет в базе"
-
-lb = Library()
-lb.show_all_books()
-
+    def find_book_by_author(self, author: str) -> list:
+        """Ищет книги по автору."""
+        return [book for book in self.books if book['author'] == author]
